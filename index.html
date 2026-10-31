@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es"><head>
+<html lang="es">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Seguimiento de Coaching · Merchand</title>
@@ -217,6 +218,11 @@
     .pilar-grid{grid-template-columns:repeat(2,1fr);}
     .main{padding:20px;}
   }
+
+  .live-status{font-size:11.5px; padding:7px 10px; border-radius:8px; line-height:1.35; border:1px solid var(--line); background:var(--bg); color:var(--ink-soft);}
+  .live-status.ok{background:var(--grade-a-soft); color:var(--grade-a); border-color:transparent; font-weight:600;}
+  .live-status.warn{background:var(--grade-c-soft); color:#8A5A12; border-color:transparent;}
+  .live-status.loading{color:var(--ink-faint);}
 </style>
 </head>
 <body>
@@ -236,166 +242,301 @@
       <input type="text" id="searchInput" placeholder="Buscar merchand o supervisor…">
     </div>
     <div class="actions-row">
+      <div class="live-status loading" id="liveStatus">Conectando con la planilla…</div>
       <button class="btn btn-primary" id="btnUpdate">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 3v6h-6"></path></svg>
-        Actualizar base
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        Actualizar ahora
+      </button>
+      <button class="btn" id="btnManual">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+        Cargar CSV manual
       </button>
       <button class="btn" id="btnDownload">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         Descargar HTML actualizado
       </button>
-      <div class="upload-help">Subí el CSV exportado del formulario de respuestas (Archivo → Descargar → CSV en Google Sheets). Reemplaza toda la base. La fecha de cada coaching se toma de la columna "Marca temporal" — si necesitás corregir cuándo se hizo, editá esa celda en la planilla antes de exportar.</div>
+      <div class="upload-help">Los datos se leen solos de la planilla cada vez que abrís el dashboard (la fecha de cada coaching sale de la columna A). "Cargar CSV manual" queda como respaldo.</div>
       <input type="file" id="csvFileInput" accept=".csv" class="file-input-hidden">
     </div>
-    <div class="vendor-list" id="vendorList"><div class="sup-group"><div class="sup-group-label">Roberto Seco</div><div class="vendor-item active">
-        <span class="badge badge-A">A</span>
-        <span class="name">EMANUEL SEPULVEDA<br><span class="meta">1 coaching · <span class="trend flat">—</span></span></span>
-      </div><div class="vendor-item">
-        <span class="badge badge-B">B</span>
-        <span class="name">JUAN PABLO ORELLANA<br><span class="meta">1 coaching · <span class="trend flat">—</span></span></span>
-      </div><div class="vendor-item">
-        <span class="badge badge-A">A</span>
-        <span class="name">VALLEJO JOAQUIN<br><span class="meta">2 coachings · <span class="trend up">▲ 5.0 pts</span></span></span>
-      </div><div class="vendor-item">
-        <span class="badge badge-A">A</span>
-        <span class="name">VEGA JUAN<br><span class="meta">2 coachings · <span class="trend up">▲ 6.3 pts</span></span></span>
-      </div></div></div>
+    <div class="vendor-list" id="vendorList"></div>
   </aside>
 
   <main class="main" id="main">
-    <div class="empty-state" id="emptyState" style="display: none;">
+    <div class="empty-state" id="emptyState">
       <div class="cap-lg"></div>
       <p>Elegí un merchand a la izquierda para ver su evolución en los coachings.</p>
     </div>
-    <div id="detailView" style="display: block;">
-    <div class="head-row">
-      <div class="vendor-title">
-        <h2>EMANUEL SEPULVEDA</h2>
-        <div class="sub">Supervisor actual: <b>Roberto Seco</b> &nbsp;·&nbsp; 1 coaching registrado</div>
-      </div>
-      <div class="cap-hero">
-        <div class="cap-badge g-A"><div class="cap-inner">A</div></div>
-        <div class="cap-text">Último coaching<span class="pct num">93.8%</span></div>
-      </div>
-    </div>
-
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="label">Coachings realizados</div>
-        <div class="value num">1</div>
-        <div class="sub">10 de ago de 2026 → 10 de ago de 2026</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Puntaje actual</div>
-        <div class="value num">93.8%</div>
-        <div class="sub">Nota A · promedio 3.79/4</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Evolución</div>
-        <div class="value num " style="color:var(--ink)">—</div>
-        <div class="sub">vs. primer coaching (+0.0 pts)</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Pilar más débil (último)</div>
-        <div class="value num">91%</div>
-        <div class="sub">Rutina básica</div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Evolución del puntaje</h3>
-      <p class="panel-sub">Total y desglose por pilar en cada coaching. Tocá una etiqueta para mostrar u ocultar esa serie.</p>
-      <div class="chart-wrap"><div id="trendChart"><svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet"><line class="gridline" x1="34" y1="266" x2="886" y2="266"></line><text class="axis-label" x="26" y="269" text-anchor="end">0%</text><line class="gridline" x1="34" y1="215.2" x2="886" y2="215.2"></line><text class="axis-label" x="26" y="218.2" text-anchor="end">20%</text><line class="gridline" x1="34" y1="164.4" x2="886" y2="164.4"></line><text class="axis-label" x="26" y="167.4" text-anchor="end">40%</text><line class="gridline" x1="34" y1="113.6" x2="886" y2="113.6"></line><text class="axis-label" x="26" y="116.6" text-anchor="end">60%</text><line class="gridline" x1="34" y1="62.80000000000001" x2="886" y2="62.80000000000001"></line><text class="axis-label" x="26" y="65.80000000000001" text-anchor="end">80%</text><line class="gridline" x1="34" y1="12" x2="886" y2="12"></line><text class="axis-label" x="26" y="15" text-anchor="end">100%</text><line class="gridline" x1="34" y1="266" x2="886" y2="266" style="stroke:var(--line); stroke-width:1.5;"></line><text class="x-label" x="460" y="290" text-anchor="middle">#1 · 10 de ago de 2026</text><g class="series-group" data-key="total" style=""><rect class="series-bar" x="136.24" y="27.875" width="160.38" height="238.125" rx="2" fill="#1B231F"><title>Total — Coaching #1 (10 de ago de 2026): 93.8%</title></rect></g><g class="series-group" data-key="blandas" style=""><rect class="series-bar" x="298.62" y="24.69999999999999" width="160.38" height="241.3" rx="2" fill="#2F6F5E"><title>Comp. blandas — Coaching #1 (10 de ago de 2026): 95.0%</title></rect></g><g class="series-group" data-key="rutina" style=""><rect class="series-bar" x="461" y="35.799800000000005" width="160.38" height="230.2002" rx="2" fill="#3E7CA6"><title>Rutina básica — Coaching #1 (10 de ago de 2026): 90.6%</title></rect></g><g class="series-group" data-key="conocimientos" style=""><rect class="series-bar" x="623.38" y="21.067799999999977" width="160.38" height="244.93220000000002" rx="2" fill="#C98A2B"><title>Conocimientos — Coaching #1 (10 de ago de 2026): 96.4%</title></rect></g></svg></div></div>
-      <div class="legend-toggle" id="legendToggle">
-    <span class="legend-chip " data-key="total">
-      <span class="dot" style="background:#1B231F"></span>Total
-    </span>
-  
-    <span class="legend-chip " data-key="blandas">
-      <span class="dot" style="background:#2F6F5E"></span>Comp. blandas
-    </span>
-  
-    <span class="legend-chip " data-key="rutina">
-      <span class="dot" style="background:#3E7CA6"></span>Rutina básica
-    </span>
-  
-    <span class="legend-chip " data-key="conocimientos">
-      <span class="dot" style="background:#C98A2B"></span>Conocimientos
-    </span>
-  </div>
-    </div>
-
-    <div class="panel">
-      <h3>Historial de coachings</h3>
-      <p class="panel-sub">Detalle cronológico, comentarios del supervisor y puntaje por pilar.</p>
-      <table class="hist">
-        <thead>
-          <tr><th>#</th><th>Fecha</th><th>Supervisor</th><th>Total</th><th>Nota</th><th>Puntos a mejorar</th></tr>
-        </thead>
-        <tbody>
-          
-    <tr>
-      <td class="hist-num num">1</td>
-      <td class="num">10 de ago de 2026</td>
-      <td class="sup-tag">Roberto Seco</td>
-      <td class="hist-num num">93.8%</td>
-      <td><span class="badge badge-A">A</span></td>
-      <td><div class="notes-cell">reforzar precio sugerido y foco del mes · corresponde coaching del 10/08/2026</div>
-    <div class="pilar-grid">
-      
-        <div class="pilar-cell">
-          <div class="pn">Comp. blandas</div>
-          <div class="pv num" style="color:#2F6F5E">95%</div>
-        </div>
-      
-        <div class="pilar-cell">
-          <div class="pn">Rutina básica</div>
-          <div class="pv num" style="color:#3E7CA6">91%</div>
-        </div>
-      
-        <div class="pilar-cell">
-          <div class="pn">Conocimientos</div>
-          <div class="pv num" style="color:#C98A2B">96%</div>
-        </div>
-      
-    </div>
-    
-      <details class="q-detail">
-        <summary>Competencias blandas — detalle de preguntas</summary>
-        <ul class="q-list">
-          <li><span>Comunicación</span><span class="q-score">4/4</span></li><li><span>Planificación y ejecución de rutina</span><span class="q-score">4/4</span></li><li><span>Aprendizaje contínuo</span><span class="q-score">3/4</span></li><li><span>Resiliencia</span><span class="q-score">4/4</span></li>
-        </ul>
-      </details>
-    
-      <details class="q-detail">
-        <summary>Rutina Básica — detalle de preguntas</summary>
-        <ul class="q-list">
-          <li><span>Seguridad</span><span class="q-score">4/4</span></li><li><span>Productividad</span><span class="q-score">4/4</span></li><li><span>Detección de oportunidades</span><span class="q-score">4/4</span></li><li><span>Reposición</span><span class="q-score">4/4</span></li><li><span>Ejecución</span><span class="q-score">3/4</span></li>
-        </ul>
-      </details>
-    
-      <details class="q-detail">
-        <summary>Conocimientos generales — detalle de preguntas</summary>
-        <ul class="q-list">
-          <li><span>Focos</span><span class="q-score">3/4</span></li><li><span>Precio</span><span class="q-score">4/4</span></li><li><span>Frío</span><span class="q-score">4/4</span></li><li><span>Disponibilidad</span><span class="q-score">4/4</span></li><li><span>Zonas (Ocasión / Ofertas / Arribo)</span><span class="q-score">4/4</span></li>
-        </ul>
-      </details>
-    
-  </td>
-    </tr>
-  
-        </tbody>
-      </table>
-    </div>
-
-    <footer class="foot">Generado a partir de las respuestas del formulario de coaching · 1 registro(s) para EMANUEL SEPULVEDA</footer>
-  </div>
+    <div id="detailView" style="display:none;"></div>
   </main>
 </div>
 
-<div class="toast" id="toast">Descarga iniciada</div>
+<div class="toast" id="toast"></div>
 
-<script id="coaching-data" type="application/json">{"pilares_meta":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas"},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica"},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos"}],"vendors":[{"nombre":"EMANUEL SEPULVEDA","supervisores":["Roberto Seco"],"supervisor_actual":"Roberto Seco","n_coachings":1,"ultimo_total":93.75,"ultima_nota":"A","primer_total":93.75,"coachings":[{"promotor":"EMANUEL SEPULVEDA","supervisor":"Roberto Seco","fecha":"2026-08-10","fecha_raw":null,"total_pct":93.75,"avg_score":3.786,"grade":"A","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":95,"questions":[{"label":"Comunicación","weight":5,"score":4},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":3},{"label":"Resiliencia","weight":5,"score":4}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":90.63,"questions":[{"label":"Seguridad","weight":5,"score":4},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":4},{"label":"Reposición","weight":5,"score":4},{"label":"Ejecución","weight":15,"score":3}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":96.43,"questions":[{"label":"Focos","weight":5,"score":3},{"label":"Precio","weight":5,"score":4},{"label":"Frío","weight":10,"score":4},{"label":"Disponibilidad","weight":10,"score":4},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":4}]}],"notas":"reforzar precio sugerido y foco del mes · corresponde coaching del 10/08/2026","_ts":1786379264000,"_rowOrder":5,"numero":1}]},{"nombre":"JUAN PABLO ORELLANA","supervisores":["Roberto Seco"],"supervisor_actual":"Roberto Seco","n_coachings":1,"ultimo_total":81.25,"ultima_nota":"B","primer_total":81.25,"coachings":[{"promotor":"JUAN PABLO ORELLANA","supervisor":"Roberto Seco","fecha":"2026-08-27","fecha_raw":null,"total_pct":81.25,"avg_score":3.286,"grade":"B","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":95,"questions":[{"label":"Comunicación","weight":5,"score":4},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":3},{"label":"Resiliencia","weight":5,"score":4}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":78.13,"questions":[{"label":"Seguridad","weight":5,"score":3},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":3},{"label":"Reposición","weight":5,"score":3},{"label":"Ejecución","weight":15,"score":3}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":75,"questions":[{"label":"Focos","weight":5,"score":3},{"label":"Precio","weight":5,"score":3},{"label":"Frío","weight":10,"score":3},{"label":"Disponibilidad","weight":10,"score":3},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":3}]}],"notas":"repositor nuevo , falta mejorar en todas las areas · corresponde a coaching del 27/08/2026","_ts":1787845695000,"_rowOrder":4,"numero":1}]},{"nombre":"VALLEJO JOAQUIN","supervisores":["Roberto Seco"],"supervisor_actual":"Roberto Seco","n_coachings":2,"ultimo_total":98.75,"ultima_nota":"A","primer_total":93.75,"coachings":[{"promotor":"VALLEJO JOAQUIN","supervisor":"Roberto Seco","fecha":"2026-04-21","fecha_raw":null,"total_pct":93.75,"avg_score":3.786,"grade":"A","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":90,"questions":[{"label":"Comunicación","weight":5,"score":3},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":3},{"label":"Resiliencia","weight":5,"score":4}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":90.63,"questions":[{"label":"Seguridad","weight":5,"score":4},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":4},{"label":"Reposición","weight":5,"score":4},{"label":"Ejecución","weight":15,"score":3}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":100,"questions":[{"label":"Focos","weight":5,"score":4},{"label":"Precio","weight":5,"score":4},{"label":"Frío","weight":10,"score":4},{"label":"Disponibilidad","weight":10,"score":4},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":4}]}],"notas":"conocer mas precios sugeridos · corresponde coaching del 21/04/2026","_ts":1776783979000,"_rowOrder":3,"numero":1},{"promotor":"VALLEJO JOAQUIN","supervisor":"Roberto Seco","fecha":"2026-07-14","fecha_raw":null,"total_pct":98.75,"avg_score":3.929,"grade":"A","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":95,"questions":[{"label":"Comunicación","weight":5,"score":4},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":4},{"label":"Resiliencia","weight":5,"score":3}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":100,"questions":[{"label":"Seguridad","weight":5,"score":4},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":4},{"label":"Reposición","weight":5,"score":4},{"label":"Ejecución","weight":15,"score":4}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":100,"questions":[{"label":"Focos","weight":5,"score":4},{"label":"Precio","weight":5,"score":4},{"label":"Frío","weight":10,"score":4},{"label":"Disponibilidad","weight":10,"score":4},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":4}]}],"notas":"fortalecer en la resiliencia · corresponde coaching del 14/07/2026","_ts":1784073464000,"_rowOrder":0,"numero":2}]},{"nombre":"VEGA JUAN","supervisores":["Roberto Seco"],"supervisor_actual":"Roberto Seco","n_coachings":2,"ultimo_total":98.75,"ultima_nota":"A","primer_total":92.5,"coachings":[{"promotor":"VEGA JUAN","supervisor":"Roberto Seco","fecha":"2026-04-14","fecha_raw":null,"total_pct":92.5,"avg_score":3.714,"grade":"A","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":90,"questions":[{"label":"Comunicación","weight":5,"score":3},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":3},{"label":"Resiliencia","weight":5,"score":4}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":90.63,"questions":[{"label":"Seguridad","weight":5,"score":4},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":4},{"label":"Reposición","weight":5,"score":4},{"label":"Ejecución","weight":15,"score":3}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":96.43,"questions":[{"label":"Focos","weight":5,"score":3},{"label":"Precio","weight":5,"score":4},{"label":"Frío","weight":10,"score":4},{"label":"Disponibilidad","weight":10,"score":4},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":4}]}],"notas":"enfocar mas en las campañas nuevas · corresponde a coaching del 14/04/2026","_ts":1776178695000,"_rowOrder":2,"numero":1},{"promotor":"VEGA JUAN","supervisor":"Roberto Seco","fecha":"2026-06-17","fecha_raw":null,"total_pct":98.75,"avg_score":3.929,"grade":"A","pilares":[{"id":"blandas","name":"Competencias blandas","short":"Comp. blandas","pct":95,"questions":[{"label":"Comunicación","weight":5,"score":4},{"label":"Planificación y ejecución de rutina","weight":10,"score":4},{"label":"Aprendizaje contínuo","weight":5,"score":3},{"label":"Resiliencia","weight":5,"score":4}]},{"id":"rutina","name":"Rutina Básica","short":"Rutina básica","pct":100,"questions":[{"label":"Seguridad","weight":5,"score":4},{"label":"Productividad","weight":5,"score":4},{"label":"Detección de oportunidades","weight":10,"score":4},{"label":"Reposición","weight":5,"score":4},{"label":"Ejecución","weight":15,"score":4}]},{"id":"conocimientos","name":"Conocimientos generales","short":"Conocimientos","pct":100,"questions":[{"label":"Focos","weight":5,"score":4},{"label":"Precio","weight":5,"score":4},{"label":"Frío","weight":10,"score":4},{"label":"Disponibilidad","weight":10,"score":4},{"label":"Zonas (Ocasión / Ofertas / Arribo)","weight":5,"score":4}]}],"notas":"mejora en conocimientos de variables comerciales · corresponde coaching del 17/06/2026","_ts":1781743311000,"_rowOrder":1,"numero":2}]}],"generated_from":"CSV importado manualmente","n_registros":6}</script>
+<script id="coaching-data" type="application/json">{
+ "pilares_meta": [
+  {
+   "id": "blandas",
+   "name": "Competencias blandas",
+   "short": "Comp. blandas"
+  },
+  {
+   "id": "rutina",
+   "name": "Rutina Básica",
+   "short": "Rutina básica"
+  },
+  {
+   "id": "conocimientos",
+   "name": "Conocimientos generales",
+   "short": "Conocimientos"
+  }
+ ],
+ "vendors": [
+  {
+   "nombre": "VALLEJO JOAQUIN",
+   "supervisores": [
+    "Roberto Seco"
+   ],
+   "supervisor_actual": "Roberto Seco",
+   "n_coachings": 1,
+   "ultimo_total": 98.75,
+   "ultima_nota": "A",
+   "primer_total": 98.75,
+   "coachings": [
+    {
+     "promotor": "VALLEJO JOAQUIN",
+     "supervisor": "Roberto Seco",
+     "fecha": "2026-08-30",
+     "fecha_ts": "2026-08-30T20:57:44",
+     "total_pct": 98.75,
+     "avg_score": 3.929,
+     "grade": "A",
+     "pilares": [
+      {
+       "id": "blandas",
+       "name": "Competencias blandas",
+       "short": "Comp. blandas",
+       "pct": 95.0,
+       "questions": [
+        {
+         "label": "Comunicación",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Planificación y ejecución de rutina",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Aprendizaje contínuo",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Resiliencia",
+         "weight": 5,
+         "score": 3.0
+        }
+       ]
+      },
+      {
+       "id": "rutina",
+       "name": "Rutina Básica",
+       "short": "Rutina básica",
+       "pct": 100.0,
+       "questions": [
+        {
+         "label": "Seguridad",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Productividad",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Detección de oportunidades",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Reposición",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Ejecución",
+         "weight": 15,
+         "score": 4.0
+        }
+       ]
+      },
+      {
+       "id": "conocimientos",
+       "name": "Conocimientos generales",
+       "short": "Conocimientos",
+       "pct": 100.0,
+       "questions": [
+        {
+         "label": "Focos",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Precio",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Frío",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Disponibilidad",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Zonas (Ocasión / Ofertas / Arribo)",
+         "weight": 5,
+         "score": 4.0
+        }
+       ]
+      }
+     ],
+     "notas": "fortalecer en la resiliencia · corresponde coaching del 14/07/2026",
+     "numero": 1,
+     "vendor_supervisor_latest": "Roberto Seco"
+    }
+   ]
+  },
+  {
+   "nombre": "VEGA JUAN",
+   "supervisores": [
+    "Roberto Seco"
+   ],
+   "supervisor_actual": "Roberto Seco",
+   "n_coachings": 1,
+   "ultimo_total": 98.75,
+   "ultima_nota": "A",
+   "primer_total": 98.75,
+   "coachings": [
+    {
+     "promotor": "VEGA JUAN",
+     "supervisor": "Roberto Seco",
+     "fecha": "2026-08-30",
+     "fecha_ts": "2026-08-30T21:41:51",
+     "total_pct": 98.75,
+     "avg_score": 3.929,
+     "grade": "A",
+     "pilares": [
+      {
+       "id": "blandas",
+       "name": "Competencias blandas",
+       "short": "Comp. blandas",
+       "pct": 95.0,
+       "questions": [
+        {
+         "label": "Comunicación",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Planificación y ejecución de rutina",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Aprendizaje contínuo",
+         "weight": 5,
+         "score": 3.0
+        },
+        {
+         "label": "Resiliencia",
+         "weight": 5,
+         "score": 4.0
+        }
+       ]
+      },
+      {
+       "id": "rutina",
+       "name": "Rutina Básica",
+       "short": "Rutina básica",
+       "pct": 100.0,
+       "questions": [
+        {
+         "label": "Seguridad",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Productividad",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Detección de oportunidades",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Reposición",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Ejecución",
+         "weight": 15,
+         "score": 4.0
+        }
+       ]
+      },
+      {
+       "id": "conocimientos",
+       "name": "Conocimientos generales",
+       "short": "Conocimientos",
+       "pct": 100.0,
+       "questions": [
+        {
+         "label": "Focos",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Precio",
+         "weight": 5,
+         "score": 4.0
+        },
+        {
+         "label": "Frío",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Disponibilidad",
+         "weight": 10,
+         "score": 4.0
+        },
+        {
+         "label": "Zonas (Ocasión / Ofertas / Arribo)",
+         "weight": 5,
+         "score": 4.0
+        }
+       ]
+      }
+     ],
+     "notas": "mejora en conocimientos de variables comerciales · corresponde coaching del 17/06/2026",
+     "numero": 1,
+     "vendor_supervisor_latest": "Roberto Seco"
+    }
+   ]
+  }
+ ],
+ "generated_from": "Coaching_Merchand_-_2026__respuestas__-_Respuestas_de_formulario_1.csv",
+ "n_registros": 2
+}</script>
 
 <script>
 const DATA = JSON.parse(document.getElementById('coaching-data').textContent);
@@ -881,9 +1022,82 @@ function showToast(msg, isError){
   showToast._timer = setTimeout(() => { t.className = 'toast'; }, 4200);
 }
 
-document.getElementById('btnUpdate').addEventListener('click', () => {
+/* ============================================================
+   CARGA AUTOMÁTICA desde Google Sheets (CSV publicado en la web)
+   Si falla o la planilla no coincide, se siguen mostrando los
+   datos guardados dentro de este archivo.
+   ============================================================ */
+const LIVE_CONFIG = {
+  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLSi3X5V_PO8ns70_mMtgrcNWjRfnPT-nwTdoburP-Y5bqgFBZsVhXRpDNj9UjXKY10K1C3wOo2Emv/pub?output=csv',
+  headerCounts: [19, 18],       // cantidad de columnas con encabezado que se espera
+  firstQuestionHint: /informa activamente/i,   // texto que debe aparecer en el encabezado de la 1ª pregunta
+};
+
+function setLiveStatus(kind, text){
+  const el = document.getElementById('liveStatus');
+  if(!el) return;
+  el.className = 'live-status ' + kind;
+  el.textContent = text;
+}
+
+function validateLiveRows(rows){
+  if(!rows.length) throw new Error('la planilla llegó vacía');
+  const header = rows[0];
+  const nonEmpty = header.filter(h => (h || '').trim() !== '').length;
+  if(!LIVE_CONFIG.headerCounts.includes(nonEmpty) || !LIVE_CONFIG.firstQuestionHint.test(header[3] || '')){
+    throw new Error('la planilla no coincide con este dashboard (' + nonEmpty + ' columnas)');
+  }
+}
+
+function applyLiveData(newData){
+  const prev = selectedVendor;
+  DATA.pilares_meta = newData.pilares_meta;
+  DATA.vendors = newData.vendors;
+  DATA.generated_from = 'Google Sheets (en vivo)';
+  DATA.n_registros = newData.n_registros;
+  try{ document.getElementById('coaching-data').textContent = JSON.stringify(DATA); }catch(e){}
+  if(prev && DATA.vendors.find(v => v.nombre === prev)){
+    selectVendor(prev);
+  } else {
+    selectedVendor = null;
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('detailView').style.display = 'none';
+    renderSidebar(document.getElementById('searchInput').value);
+  }
+}
+
+let liveBusy = false;
+async function loadLive(manual){
+  if(liveBusy) return;
+  liveBusy = true;
+  setLiveStatus('loading', 'Actualizando desde la planilla…');
+  try{
+    const sep = LIVE_CONFIG.url.includes('?') ? '&' : '?';
+    const res = await fetch(LIVE_CONFIG.url + sep + 't=' + Date.now(), {cache: 'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if(/^\s*<(!doctype|html)/i.test(text)) throw new Error('la hoja no está publicada como CSV');
+    const rows = parseCSV(text);
+    validateLiveRows(rows);
+    const newData = processCSVRows(rows);
+    applyLiveData(newData);
+    const hh = new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+    setLiveStatus('ok', 'En vivo · ' + newData.n_registros + ' coachings · ' + hh);
+    if(manual) showToast('Base actualizada: ' + newData.n_registros + ' coachings');
+  } catch(err){
+    setLiveStatus('warn', 'Sin datos en vivo (' + err.message + '). Mostrando los datos guardados.');
+    if(manual) showToast('No se pudo actualizar: ' + err.message, true);
+  } finally {
+    liveBusy = false;
+  }
+}
+
+document.getElementById('btnUpdate').addEventListener('click', () => loadLive(true));
+document.getElementById('btnManual').addEventListener('click', () => {
   document.getElementById('csvFileInput').click();
 });
+loadLive(false);
+
 
 document.getElementById('csvFileInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -937,6 +1151,5 @@ document.getElementById('btnDownload').addEventListener('click', () => {
 });
 
 </script>
-
-
-</body></html>
+</body>
+</html>
